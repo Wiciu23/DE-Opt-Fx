@@ -4,6 +4,7 @@ import java.util.Random;
 import java.util.logging.*;
 
 public class Optimization {
+    private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private double bestValue = Double.MAX_VALUE;
     private OptimizationFunction objectiveFunction;
     private OptimizationParameter[] optimizationParameters;
@@ -18,13 +19,18 @@ public class Optimization {
         this.objectiveFunction = objectiveFunction;
     }
 
+    public Optimization(OptimizationParameter[] optimizationParameters, int population) {
+        this.optimizationParameters = optimizationParameters;
+        generatePopulation(population);
+    }
 
-    private void generatePopulation(int amount){
+    public void generatePopulation(int amount){
         if(optimizationParameters != null) throw new NullPointerException("Wymagany jest obiekt zmienności parametrów optymalizacji");
         population = new Vector[amount];
         for(int i = 0; i < amount ; i++){
             assert optimizationParameters != null; //DO SPRAWDZENIA
             population[i] = new Vector(generateRandomArrayOfDoubles(optimizationParameters));
+            LOGGER.log(Level.INFO, ((i + 1) + " " + of + " " + amount + " population generated"));
         }
     }
 

@@ -6,6 +6,9 @@ public class Main {
 
     private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     public static void main(String[] args){
+        Optimization optimization;
+        OptimizatizeParameters optParams = OptimizeParametersFactory.getOptimizeParameters(1);
+
         try {
             FileHandler fileHandler = new FileHandler("app.log");
             LOGGER.addHandler(fileHandler);
@@ -16,7 +19,7 @@ public class Main {
 
 
         try{
-            //tworzenie obiektu optymalizacji
+            optimization = new Optimization(optParams,5);
         }catch (Exception e){
             e.printStackTrace();
         }
