@@ -10,7 +10,7 @@ import java.util.Arrays;
 /**
  * Can represent a position as well as a velocity.
  */
-class Vector implements VectorOperations {
+public class Vector implements VectorOperations {
 
     private double a[];
     private double limit = Double.MAX_VALUE;
@@ -19,7 +19,7 @@ class Vector implements VectorOperations {
         this( new double[length]);
     }
 
-    Vector (double _a[]) {
+    public Vector(double _a[]) {
         a = new double[_a.length];
         for (int i = 0; i < _a.length; i++){
             a[i] = _a[i];
@@ -117,6 +117,18 @@ class Vector implements VectorOperations {
         return Arrays.toString(a);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Vector vector = (Vector) o;
+        return Arrays.equals(a, vector.a);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(a);
+    }
 }
 
 

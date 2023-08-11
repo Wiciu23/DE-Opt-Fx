@@ -7,7 +7,8 @@ public class Main {
     private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     public static void main(String[] args){
         Optimization optimization;
-        OptimizatizeParameters optParams = OptimizeParametersFactory.getOptimizeParameters(1);
+        OptimizationParameter[] optParams = OptimizeParametersFactory.getOptimizeParameters(1);
+        OptimizationFunction optFunction = OptimizeFunctionFactory.getOptimizeFunction(1);
 
         try {
             FileHandler fileHandler = new FileHandler("app.log");
@@ -19,7 +20,11 @@ public class Main {
 
 
         try{
-            optimization = new Optimization(optParams,5);
+            optimization = new Optimization(optParams,10,optFunction, 0.75, 0.5 );
+            optimization.setTargetErrorValue(0.001);
+           //optimization.generatePopulation(5);
+            optimization.run();
+            LOGGER.log(Level.INFO,"Optymalizacja została zakończona");
         }catch (Exception e){
             e.printStackTrace();
         }
