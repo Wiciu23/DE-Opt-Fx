@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.logging.*;
 
-public class Optimization {
+public class Optimization implements Runnable {
     private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private double bestSolution = Double.MAX_VALUE;
 
@@ -68,6 +68,7 @@ public class Optimization {
         this.CR = crossOverConstant;
     }
 
+    @Override
     public void run(){
         double bestOptSolution = bestSolution;
         int counter = 0;

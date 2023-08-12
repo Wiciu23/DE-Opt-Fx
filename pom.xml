@@ -46,8 +46,23 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.lejon.T-SNE-Java</groupId>
+      <artifactId>tsne</artifactId>
+      <version>v2.6.4</version>
+    </dependency>
   </dependencies>
-
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
   <build>
         <plugins>
             <plugin>

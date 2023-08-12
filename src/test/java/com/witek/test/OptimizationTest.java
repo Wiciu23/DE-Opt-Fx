@@ -16,7 +16,6 @@ public class OptimizationTest {
         Vector uniqueIndividual = new Vector(new double[] {1.0, 1.0, 1.0});
 
         Optimization optimization = new Optimization();
-        optimization.setPopulation(population);
 
 
 

@@ -5,12 +5,22 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.witek.deoptfx.HelloController">
   <padding>
     <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
   </padding>
 
-  <Label fx:id="welcomeText"/>
-  <Button text="Hello!" onAction="#onHelloButtonClick"/>
+
+  <Label fx:id="welcomeText" text="Siema" />
+  <Button fx:id="startButton" text="Start Optimization" onAction="#onStartOptButtonClick" />
+  <Button fx:id="stopButton" text="Stop Optimization" onAction="#onStopOptButtonClick"/>
+  <TextField fx:id="population" text="Population Size" onMouseClicked="#onPopulationMouseClicked" onMouseExited="#onPopulationMouseExited"/>
+  <TextField fx:id="CR" text="CR (cross-over constant)" onMouseClicked="#onCRMouseClicked" onMouseExited="#onCRMouseExited"/>
+  <TextField fx:id="F" text="F (scaling factor)" onMouseClicked="#onFMouseClicked" onMouseExited="#onFMouseExited"/>
+  <Label fx:id="bestEval" text ="bestEval" />
+  <VBox fx:id="coefficientsFields" alignment="CENTER" spacing="5.0" xmlns:fx="http://javafx.com/fxml">
+
+  </VBox>
 </VBox>
