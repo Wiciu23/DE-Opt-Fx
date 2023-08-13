@@ -1,9 +1,15 @@
 package com.witek.deoptfx.model;
 
 public class FunctionMgr implements OptimizationFunction {
+
+    private String functioName = "Objective function of dislocation density";
     @Override
     public double optimize(double[] arguments) {
         return function(arguments);
+    }
+    @Override
+    public String toString(){
+        return functioName;
     }
 
     public FunctionMgr() {

@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.logging.*;
 
 public class Optimization implements Runnable {
+    private boolean isRunning = false;
     private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private double bestSolution = Double.MAX_VALUE;
 
@@ -14,7 +15,13 @@ public class Optimization implements Runnable {
     private OptimizationParameter[] optimizationParameters;
     private VectorLockable[] population;
 
+    public void setTargetEpochCount(double targetEpochCount) {
+        this.targetEpochCount = targetEpochCount;
+    }
+
     private double targetErrorValue = 0.1;
+
+    private double targetEpochCount;
 
     private double F; //scaling factor
 
@@ -34,6 +41,13 @@ public class Optimization implements Runnable {
 
     public void setCR(double CR) {
         this.CR = CR;
+    }
+
+    public void setRunning(boolean b) {
+        this.isRunning = b;
+    }
+    public boolean isRunning() {
+        return isRunning;
     }
 
     public void setTargetErrorValue(double targetErrorValue) {
@@ -72,7 +86,7 @@ public class Optimization implements Runnable {
     public void run(){
         double bestOptSolution = bestSolution;
         int counter = 0;
-        while(bestOptSolution > targetErrorValue) {
+        while((bestOptSolution > targetErrorValue || targetEpochCount < counter) && isRunning) {
             VectorOperations[] mutated = new VectorOperations[population.length];
             for (int i = 0; i < population.length; i++) {
                 VectorLockable ancestor = population[i];
@@ -179,7 +193,8 @@ public class Optimization implements Runnable {
         double evalVec = objectiveFunction.optimize(vectorCoordinates);
         if(evalMutVec < evalVec || Double.isNaN(evalVec)){
             vector.set(mutatedCoordinates);
-            LOGGER.log(Level.INFO, "Vector has been swapped, better solution was founded: " + evalMutVec + " < " + evalVec );
-        }else LOGGER.log(Level.INFO, "Vector has not been swapped, better solution was not founded: " + evalMutVec + " > " + evalVec );
+            LOGGER.log(Level.INFO, String.format("%-60s %E < %E","Vector has been swapped, better solution was founded: ",evalMutVec, evalVec ));
+        }else LOGGER.log(Level.INFO, String.format("%-60s %E > %E","Vector has not been swapped, better solution was not founded: ", evalMutVec, evalVec ));
     }
+
 }

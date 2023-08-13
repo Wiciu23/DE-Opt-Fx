@@ -19,8 +19,10 @@
   <TextField fx:id="population" text="Population Size" onMouseClicked="#onPopulationMouseClicked" onMouseExited="#onPopulationMouseExited"/>
   <TextField fx:id="CR" text="CR (cross-over constant)" onMouseClicked="#onCRMouseClicked" onMouseExited="#onCRMouseExited"/>
   <TextField fx:id="F" text="F (scaling factor)" onMouseClicked="#onFMouseClicked" onMouseExited="#onFMouseExited"/>
+  <TextField fx:id="epochsStopCondition" text="Epochs stop condition" onMouseClicked="#onEpochsStopConditionMouseClicked" onMouseExited="#onEpochsStopConditionMouseExited"/>
+  <TextField fx:id="solutionStopCondition" text="Value obj. fun stop condition" onMouseClicked="#onSolutionStopConditionMouseClicked" onMouseExited="#onSolutionStopConditionMouseExited"/>
   <Label fx:id="bestEval" text ="bestEval" />
-  <VBox fx:id="coefficientsFields" alignment="CENTER" spacing="5.0" xmlns:fx="http://javafx.com/fxml">
+  <VBox fx:id="dynamicFields" alignment="CENTER" spacing="5.0" xmlns:fx="http://javafx.com/fxml">
 
   </VBox>
 </VBox>
