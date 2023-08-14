@@ -6,6 +6,9 @@ import java.util.Random;
 import java.util.logging.*;
 
 public class Optimization implements Runnable {
+
+    private ArrayList<ValueObserver> bestSolutionObservers = new ArrayList<>();
+    private ArrayList<ValueObserver> populationObservers = new ArrayList<>();
     private boolean isRunning = false;
     private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private double bestSolution = Double.MAX_VALUE;
@@ -15,13 +18,33 @@ public class Optimization implements Runnable {
     private OptimizationParameter[] optimizationParameters;
     private VectorLockable[] population;
 
-    public void setTargetEpochCount(double targetEpochCount) {
+    public void setTargetEpochCount(int targetEpochCount) {
         this.targetEpochCount = targetEpochCount;
     }
 
-    private double targetErrorValue = 0.1;
+    public void addSolutionObserver(ValueObserver observer){
+        this.bestSolutionObservers.add(observer);
+    }
 
-    private double targetEpochCount;
+    public void addPopulationObserver(ValueObserver observer){
+        this.populationObservers.add(observer);
+    }
+
+    public void notifySolutionObservers(){
+        for (ValueObserver observer: bestSolutionObservers) {
+            observer.update();
+        }
+    }
+
+    public void notifyPopulationObservers(){
+        for (ValueObserver observer: populationObservers) {
+            observer.update();
+        }
+    }
+
+    private Double targetErrorValue = 0.1;
+
+    private Integer targetEpochCount;
 
     private double F; //scaling factor
 
@@ -82,11 +105,17 @@ public class Optimization implements Runnable {
         this.CR = crossOverConstant;
     }
 
+    public double getBestSolution() {
+        return bestSolution;
+    }
+
     @Override
     public void run(){
         double bestOptSolution = bestSolution;
         int counter = 0;
-        while((bestOptSolution > targetErrorValue || targetEpochCount < counter) && isRunning) {
+        //DODAĆ TUTAJ WARUNEK ZŁOŻONY JAKO FUNKCJA, KTÓRA ZWRACA BOOLEAN
+        //while((bestOptSolution > targetErrorValue || targetEpochCount < counter) && isRunning) {
+        while(shouldStop(bestOptSolution,counter)) {
             VectorOperations[] mutated = new VectorOperations[population.length];
             for (int i = 0; i < population.length; i++) {
                 VectorLockable ancestor = population[i];
@@ -101,8 +130,20 @@ public class Optimization implements Runnable {
             bestOptSolution = foundBestOptSolution(population);
             counter++;
             LOGGER.log(Level.INFO,"Iteration: " + counter);
+            notifySolutionObservers();
+            notifyPopulationObservers();
         }
         LOGGER.log(Level.INFO,"Best global vector: " + bestVector + " FUNCTION VALUE: " + bestOptSolution);
+    }
+
+    boolean shouldStop(Double currentErrorValue, Integer currentEpochCount){
+        if(!this.isRunning){
+            return false;
+        }
+        boolean targetErrorValuePart = this.targetErrorValue != null && currentErrorValue > this.targetErrorValue;
+        boolean targetEpochCountPart = this.targetEpochCount != null && currentEpochCount < this.targetEpochCount;
+
+        return targetErrorValuePart || targetEpochCountPart;
     }
 
     private double foundBestOptSolution(VectorOperations[] vectors){

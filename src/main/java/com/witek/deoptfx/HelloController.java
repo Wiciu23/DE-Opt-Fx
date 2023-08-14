@@ -70,7 +70,7 @@ public class HelloController {
         int population =  Integer.parseInt(this.population.getText());
         double F = Double.parseDouble(this.F.getText());
         double CR = Double.parseDouble(this.CR.getText());
-        double epochsStop = Double.parseDouble(epochsStopCondition.getText());
+        int epochsStop = Integer.parseInt(epochsStopCondition.getText());
         double solutionStop = Double.parseDouble(solutionStopCondition.getText());
         OptimizationParameter[] objParams = OptimizeParametersFactory.getOptimizeParameters(1);
         OptimizationFunction objFunction = comboBoxObjFunc.getValue();
@@ -81,11 +81,21 @@ public class HelloController {
         optimization.setRunning(true);
         executorService.execute(optimization);
         LOGGER.log(Level.INFO, "Optymalizacja została uruchomiona");
+        generatePlots();
+    }
+
+    private void generatePlots() {
+        optimization.addSolutionObserver(()->{
+            double bestSoluton = optimization.getBestSolution();
+            System.out.printf("UWAGA NOWE ROZWIAZANIE JAKO OBSERWATOR: %f%n", bestSoluton);
+        });
     }
 
     public void onStopOptButtonClick(ActionEvent actionEvent) {
         optimization.setRunning(false);
         LOGGER.log(Level.INFO,"Optymalizacja zostaje zatrzymana");
+        startButton.setDisable(false);
+        stopButton.setDisable(true);
         if (executorService.isShutdown()) {
             LOGGER.log(Level.INFO,"EXECUTOR SHUTDOWNED");
             startButton.setDisable(false);
