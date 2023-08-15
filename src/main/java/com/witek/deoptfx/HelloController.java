@@ -3,9 +3,14 @@ package com.witek.deoptfx;
 import com.witek.deoptfx.model.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.util.Callback;
 
 import java.util.ArrayList;
@@ -19,7 +24,7 @@ public class HelloController {
     private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     public TextField epochsStopCondition;
     public TextField solutionStopCondition;
-
+    public VBox dynamicGraphs;
     private ComboBox<OptimizationFunction> comboBoxObjFunc;
     ExecutorService executorService = Executors.newCachedThreadPool();
     ArrayList<OptimizationFunction> functions = new ArrayList<>();
@@ -28,9 +33,12 @@ public class HelloController {
     public TextField CR;
     public TextField population;
     public Label bestEval;
+    Optimization optimization;
+    ScatterChart<Number,Number> tsnePlot;
+
     @FXML
     private Label welcomeText;
-    Optimization optimization;
+
 
     @FXML
     protected void onHelloButtonClick() {
@@ -51,6 +59,55 @@ public class HelloController {
         //generowanie selectboxa na podstawie listy
         generateFunctionDropList();
         stopButton.setDisable(true);
+        //podpiecie wykresu do optymalizacji
+        generatePopulationPlot();
+    }
+
+    private void updatePopulationPlot(double[][] coordinates){
+        if(this.tsnePlot.getData().isEmpty()){ //First initialization of series
+            int i = 1;
+            for (double[] coordinate: coordinates){
+
+                double x = coordinate[0];
+                double y = coordinate[1];
+                XYChart.Series<Number,Number> seria = new XYChart.Series<Number,Number>();
+                seria.setName(String.format("Unit %d", i));
+                seria.getData().add(new XYChart.Data<>(x,y));
+                this.tsnePlot.getData().add(seria);
+                i++;
+            }
+        }else{ //
+            if(coordinates.length != tsnePlot.getData().size()){ //Standars way of adding values to series
+                throw new NegativeArraySizeException("Długośc serii nie odpowiada długości tablicy współrzednych");
+            }
+            for(int i = 0 ; i < coordinates.length; i++){
+                double x = coordinates[i][0];
+                double y = coordinates[i][1];
+                tsnePlot.getData().get(i).getData().add(new XYChart.Data<>(x,y));
+            }
+        }
+    }
+
+    private void generatePopulationPlot() {
+        NumberAxis xAxis = new NumberAxis();
+        NumberAxis yAxis = new NumberAxis();
+        xAxis.setLabel("X Axis");
+        yAxis.setLabel("Y Axis");
+
+        // Create scatter chart
+        this.tsnePlot = new ScatterChart<>(xAxis, yAxis);
+        tsnePlot.setTitle("Dynamic Scatter Plot Example");
+
+        // Create series
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
+        XYChart.Series<Number, Number> series1 = new XYChart.Series<>();
+        dynamicGraphs.getChildren().add(this.tsnePlot);
+        optimization.addPopulationObserver(()->{
+            VectorOperations[] vector = optimization.getPopulation();
+            double[][] coordinates = TsneVector.generateTsneCoordinates(vector);
+            updatePopulationPlot(coordinates);
+        });
+
     }
 
     private void generateFunctionDropList() {

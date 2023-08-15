@@ -8,15 +8,18 @@ import java.util.Arrays;
 import java.util.Vector;
 
 public class TsneVector {
-        private ArrayList<VectorOperations[]> vectors = new ArrayList<>();
-        private double[][] coordinates;
-        TSNE tsne;
+    TSNE tsne;
+
     public TsneVector(ArrayList<VectorOperations[]> vectors) {
     }
 
-    public double[][] generateTsneCoordinates(){
-        this.tsne = new TSNE(coordinates,2,20,200,1000);
-
+    public static double[][] generateTsneCoordinates(VectorOperations[] vectors){
+        double[][] coordinates = new double[vectors.length][];
+        for(int i = 0; i < vectors.length; i ++){
+            coordinates[i] = vectors[i].getCordinates();
+        }
+        TSNE tsne = new TSNE(coordinates,2,20,200,1000);
+        return tsne.coordinates;
     }
 
 
@@ -29,7 +32,7 @@ public class TsneVector {
 
 
 
-        ScatterPlot canvas = ScatterPlot.of(coordinates_tsne);
+       // ScatterPlot canvas = ScatterPlot.of(coordinates_tsne);
 
 
 

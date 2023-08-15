@@ -6,9 +6,8 @@ import java.util.Random;
 import java.util.logging.*;
 
 public class Optimization implements Runnable {
-
-    private ArrayList<ValueObserver> bestSolutionObservers = new ArrayList<>();
-    private ArrayList<ValueObserver> populationObservers = new ArrayList<>();
+    private final ArrayList<ValueObserver> bestSolutionObservers = new ArrayList<>();
+    private final ArrayList<ValueObserver> populationObservers = new ArrayList<>();
     private boolean isRunning = false;
     private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private double bestSolution = Double.MAX_VALUE;
