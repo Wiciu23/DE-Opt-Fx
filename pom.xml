@@ -52,17 +52,32 @@
       <version>3.6.1</version>
     </dependency>
     <dependency>
-      <groupId>com.github.lejon.T-SNE-Java</groupId>
-      <artifactId>tsne</artifactId>
-      <version>v2.6.4</version>
+      <groupId>com.github.haifengl</groupId>
+      <artifactId>smile-core</artifactId>
+      <version>2.6.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>javacpp-platform</artifactId>
+      <version>1.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>openblas-platform</artifactId>
+      <version>0.3.9-1.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bytedeco</groupId>
+      <artifactId>arpack-ng-platform</artifactId>
+      <version>3.7.0-1.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.haifengl</groupId>
+      <artifactId>smile-plot</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+
   </dependencies>
-  <repositories>
-    <repository>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
-    </repository>
-  </repositories>
   <build>
         <plugins>
             <plugin>
