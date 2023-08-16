@@ -1,6 +1,7 @@
 package com.witek.deoptfx;
 
 import com.witek.deoptfx.model.*;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.NumberAxis;
@@ -35,6 +36,8 @@ public class HelloController {
     public Label bestEval;
     Optimization optimization;
     ScatterChart<Number,Number> tsnePlot;
+    
+    Circle[] chartLegend;
 
     @FXML
     private Label welcomeText;
@@ -60,34 +63,8 @@ public class HelloController {
         generateFunctionDropList();
         stopButton.setDisable(true);
         //podpiecie wykresu do optymalizacji
-        generatePopulationPlot();
+        //generatePopulationPlot();
     }
-
-    private void updatePopulationPlot(double[][] coordinates){
-        if(this.tsnePlot.getData().isEmpty()){ //First initialization of series
-            int i = 1;
-            for (double[] coordinate: coordinates){
-
-                double x = coordinate[0];
-                double y = coordinate[1];
-                XYChart.Series<Number,Number> seria = new XYChart.Series<Number,Number>();
-                seria.setName(String.format("Unit %d", i));
-                seria.getData().add(new XYChart.Data<>(x,y));
-                this.tsnePlot.getData().add(seria);
-                i++;
-            }
-        }else{ //
-            if(coordinates.length != tsnePlot.getData().size()){ //Standars way of adding values to series
-                throw new NegativeArraySizeException("Długośc serii nie odpowiada długości tablicy współrzednych");
-            }
-            for(int i = 0 ; i < coordinates.length; i++){
-                double x = coordinates[i][0];
-                double y = coordinates[i][1];
-                tsnePlot.getData().get(i).getData().add(new XYChart.Data<>(x,y));
-            }
-        }
-    }
-
     private void generatePopulationPlot() {
         NumberAxis xAxis = new NumberAxis();
         NumberAxis yAxis = new NumberAxis();
@@ -98,17 +75,60 @@ public class HelloController {
         this.tsnePlot = new ScatterChart<>(xAxis, yAxis);
         tsnePlot.setTitle("Dynamic Scatter Plot Example");
 
-        // Create series
-        XYChart.Series<Number, Number> series = new XYChart.Series<>();
-        XYChart.Series<Number, Number> series1 = new XYChart.Series<>();
         dynamicGraphs.getChildren().add(this.tsnePlot);
         optimization.addPopulationObserver(()->{
             VectorOperations[] vector = optimization.getPopulation();
             double[][] coordinates = TsneVector.generateTsneCoordinates(vector);
             updatePopulationPlot(coordinates);
         });
-
     }
+    private void updatePopulationPlot(double[][] coordinates){
+        if(this.tsnePlot.getData().isEmpty()){ //First initialization of series
+            prepareLegendOfPlot(coordinates);
+            int i = 1;
+            for (double[] coordinate: coordinates){
+                double x = coordinate[0];
+                double y = coordinate[1];
+                XYChart.Series<Number,Number> seria = new XYChart.Series<Number,Number>();
+                seria.setName(String.format("Unit %d", i));
+                XYChart.Data<Number,Number> data = new XYChart.Data<>(x,y);
+
+                data.setNode(chartLegend[i-1]);
+                seria.getData().add(data);
+                Platform.runLater(()->{
+                    this.tsnePlot.getData().add(seria);
+                });
+                i++;
+            }
+        }else{ //
+            if(coordinates.length != tsnePlot.getData().size()){ //Standars way of adding values to series
+                throw new NegativeArraySizeException("Długośc serii nie odpowiada długości tablicy współrzednych");
+            }
+            for(int i = 0 ; i < coordinates.length; i++){
+                double x = coordinates[i][0];
+                double y = coordinates[i][1];
+                XYChart.Data<Number,Number> data = new XYChart.Data<>(x,y);
+                //Circle circle = new Circle(3);
+                data.setNode(chartLegend[i]);
+                int finalI = i;
+                Platform.runLater(()->{
+                    tsnePlot.getData().get(finalI).getData().add(data);
+                });
+
+            }
+        }
+    }
+
+    private void prepareLegendOfPlot(double[][] coordinates) {
+        Color[] colors = new Color[coordinates.length];
+        this.chartLegend = new Circle[coordinates.length];
+        for (int j = 0; j < colors.length; j++) {
+            double hue = (double) j / colors.length; // Odcień koloru
+            colors[j] = Color.hsb(hue * 360, 1.0, 1.0); // Tworzenie koloru na podstawie odcienia
+            chartLegend[j] = new Circle(3,colors[j]);
+        }
+    }
+
 
     private void generateFunctionDropList() {
         ComboBox<OptimizationFunction> comboBoxObjFunc = new ComboBox<>();
@@ -138,7 +158,8 @@ public class HelloController {
         optimization.setRunning(true);
         executorService.execute(optimization);
         LOGGER.log(Level.INFO, "Optymalizacja została uruchomiona");
-        generatePlots();
+        generatePopulationPlot();
+        //generatePlots();
     }
 
     private void generatePlots() {

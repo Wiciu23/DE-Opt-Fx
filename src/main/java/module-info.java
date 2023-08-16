@@ -7,6 +7,7 @@ module com.witek.deoptfx {
     requires commons.math3;
     requires smile.core;
     requires smile.plot;
+    requires smile.math;
 
     opens com.witek.deoptfx to javafx.fxml;
     exports com.witek.deoptfx;

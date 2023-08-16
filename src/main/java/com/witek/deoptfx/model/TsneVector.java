@@ -1,6 +1,7 @@
 package com.witek.deoptfx.model;
 import smile.manifold.TSNE;
 import smile.plot.swing.*;
+import smile.projection.PCA;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -18,8 +19,11 @@ public class TsneVector {
         for(int i = 0; i < vectors.length; i ++){
             coordinates[i] = vectors[i].getCordinates();
         }
-        TSNE tsne = new TSNE(coordinates,2,20,200,1000);
+        TSNE tsne = new TSNE(coordinates,2,15,200,500);
         return tsne.coordinates;
+        //return PCA.fit(coordinates).getProjection().toArray();
+        //return PCA.cor(coordinates).getProjection().toArray();
+
     }
 
 
