@@ -40,6 +40,7 @@ public class HelloController {
     public Label bestEval;
     Optimization optimization;
     ScatterChart<Number,Number> tsnePlot;
+    FunctionPlot functionPlot;
 
     private GridPane objFuncPlots;
     
@@ -171,7 +172,7 @@ public class HelloController {
         setupBestSolutionText();
 
         optimization.addBestVectorObserver(()-> {
-            System.out.print(optimization.getBestVector());
+            functionPlot.updatePlots(optimization.getBestVector().getCordinates());
         });
     }
 
@@ -179,6 +180,7 @@ public class HelloController {
         if (comboBoxObjFunc.getValue().toString().equalsIgnoreCase("Objective function of dislocation density")) {
             FunctionMgr objFunction = (FunctionMgr) comboBoxObjFunc.getValue();
             FunctionPlot functionPlot = new FunctionPlot(objFunction.getDataTable());
+            this.functionPlot = functionPlot;
             functionPlot.initialize();
             Platform.runLater(()->{
                 dynamicGraphs.getChildren().add(functionPlot.getGrid());

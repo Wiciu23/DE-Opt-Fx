@@ -17,9 +17,26 @@ public class FunctionPlot {
     ObjectProperties[] dataTable;
     GridPane grid = new GridPane();
 
-    ArrayList<LineChart> charts = new ArrayList<>();
+    ArrayList<LineChart<Number,Number>> charts = new ArrayList<>();
+
     public void updatePlots(double[] a){
-        System.out.println("TEST");
+        double Q = 312000;
+        for (ObjectProperties data: dataTable) {
+            int i  = 0;
+            LineChart<Number,Number> chart = charts.get(i);
+            double[] obliczone = DifferentialEq.Euler(data.epsilon[100000],data.epsilon[1],a,data.dot_epsilon,data.temperature + 273,Q,data.epsilon[100001]);
+            XYChart.Series<Number,Number> seria = chart.getData().get(1); //pobranie drugiej serii
+            for(int j = 0 ; j < obliczone.length ; j+= 50){
+                double x = data.epsilon[j];
+                double y = obliczone[j];
+                XYChart.Data<Number,Number> point = new XYChart.Data<>(x,y);
+                int finalJ = j;
+                Platform.runLater(()->{
+                    seria.getData().set(finalJ,point); //DODAĆ LOGIKE, KTORA BEDZIE AKTUALIZOWALA SERIE ???
+                });
+
+            }
+        }
     }
 
     public FunctionPlot(ObjectProperties[] dataTable) {
@@ -50,11 +67,19 @@ public class FunctionPlot {
                 seria.getData().add(point);
             }
             linePlot.getData().add(seria);
-            System.out.println("DUPA");
         }
+        addEmptySeries();
         addPlotsToGrid();
         LOGGER.log(Level.INFO,"Inicjalizacja wykresów zakończona...");
     }
+
+    private void addEmptySeries() {
+        for (LineChart<Number,Number> chart: charts) {
+            XYChart.Series<Number,Number> seria = new XYChart.Series<>();
+            chart.getData().add(seria);
+        }
+    }
+
     private void addPlotsToGrid(){
         int row = 0;
         int col = 0;
