@@ -49,7 +49,6 @@ public class FunctionPlot {
                 XYChart.Data<Number, Number> point = new XYChart.Data<>(x, y);
                 seria.getData().add(point);
             }
-            seria.getNode().setStr
             linePlot.getData().add(seria);
             System.out.println("DUPA");
         }
