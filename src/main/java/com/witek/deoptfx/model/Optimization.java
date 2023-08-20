@@ -8,9 +8,16 @@ import java.util.logging.*;
 public class Optimization implements Runnable {
     private final ArrayList<ValueObserver> bestSolutionObservers = new ArrayList<>();
     private final ArrayList<ValueObserver> populationObservers = new ArrayList<>();
+
+    private final ArrayList<ValueObserver> bestVectorObservers = new ArrayList<>();
+
     private boolean isRunning = false;
     private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private double bestSolution = Double.MAX_VALUE;
+
+    public VectorOperations getBestVector() {
+        return bestVector;
+    }
 
     private VectorOperations bestVector;
     private OptimizationFunction objectiveFunction;
@@ -27,6 +34,14 @@ public class Optimization implements Runnable {
 
     public void addPopulationObserver(ValueObserver observer){
         this.populationObservers.add(observer);
+    }
+
+    public void addBestVectorObserver(ValueObserver observer) {this.bestVectorObservers.add(observer);}
+
+    public void notifyBestVectorObservers(){
+        for (ValueObserver observer: bestVectorObservers) {
+            observer.update();
+        }
     }
 
     public void notifySolutionObservers(){

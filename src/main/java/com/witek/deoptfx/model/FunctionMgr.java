@@ -3,6 +3,12 @@ package com.witek.deoptfx.model;
 public class FunctionMgr implements OptimizationFunction {
 
     private String functioName = "Objective function of dislocation density";
+
+    public ObjectProperties[] getDataTable() {
+        return dataTable;
+    }
+
+    private ObjectProperties[] dataTable;
     @Override
     public double optimize(double[] arguments) {
         return function(arguments);
@@ -15,8 +21,6 @@ public class FunctionMgr implements OptimizationFunction {
     public FunctionMgr() {
         this.dataTable = ExcelReader.getObjectPropertiesExcel("Dane_lab5.xlsx");
     }
-
-    private ObjectProperties[] dataTable;
 
     private double function(double[] a){
         ObjectProperties[] dataModel = dataTable;

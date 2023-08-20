@@ -9,6 +9,7 @@ import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -26,6 +27,9 @@ public class HelloController {
     public TextField epochsStopCondition;
     public TextField solutionStopCondition;
     public VBox dynamicGraphs;
+    public TextField perplexity;
+    public TextField eta;
+    public TextField iterations;
     private ComboBox<OptimizationFunction> comboBoxObjFunc;
     ExecutorService executorService = Executors.newCachedThreadPool();
     ArrayList<OptimizationFunction> functions = new ArrayList<>();
@@ -36,12 +40,13 @@ public class HelloController {
     public Label bestEval;
     Optimization optimization;
     ScatterChart<Number,Number> tsnePlot;
+
+    private GridPane objFuncPlots;
     
-    Circle[] chartLegend;
+    Color[] chartLegend;
 
     @FXML
     private Label welcomeText;
-
 
     @FXML
     protected void onHelloButtonClick() {
@@ -64,6 +69,7 @@ public class HelloController {
         stopButton.setDisable(true);
         //podpiecie wykresu do optymalizacji
         //generatePopulationPlot();
+
     }
     private void generatePopulationPlot() {
         NumberAxis xAxis = new NumberAxis();
@@ -71,36 +77,38 @@ public class HelloController {
         xAxis.setLabel("X Axis");
         yAxis.setLabel("Y Axis");
 
+        int perpexity = Integer.parseInt(this.perplexity.getText());
+        int eta = Integer.parseInt(this.eta.getText());
+        int iterations = Integer.parseInt(this.iterations.getText());
+
         // Create scatter chart
         this.tsnePlot = new ScatterChart<>(xAxis, yAxis);
-        tsnePlot.setTitle("Dynamic Scatter Plot Example");
+        tsnePlot.setTitle("t-SNE vector dim reduction");
 
         dynamicGraphs.getChildren().add(this.tsnePlot);
         optimization.addPopulationObserver(()->{
             VectorOperations[] vector = optimization.getPopulation();
-            double[][] coordinates = TsneVector.generateTsneCoordinates(vector);
+            double[][] coordinates = TsneVector.generateTsneCoordinates(vector,perpexity,eta,iterations);
             updatePopulationPlot(coordinates);
         });
     }
     private void updatePopulationPlot(double[][] coordinates){
         if(this.tsnePlot.getData().isEmpty()){ //First initialization of series
             prepareLegendOfPlot(coordinates);
-            int i = 1;
-            for (double[] coordinate: coordinates){
-                double x = coordinate[0];
-                double y = coordinate[1];
+            for(int i = 0 ; i < coordinates.length ; i++){
+                double x = coordinates[i][0];
+                double y = coordinates[i][1];
                 XYChart.Series<Number,Number> seria = new XYChart.Series<Number,Number>();
-                seria.setName(String.format("Unit %d", i));
+                seria.setName(String.format("Unit %d", i + 1));
                 XYChart.Data<Number,Number> data = new XYChart.Data<>(x,y);
-
-                data.setNode(chartLegend[i-1]);
+                data.setNode(new Circle(3, chartLegend[i]));
                 seria.getData().add(data);
+
                 Platform.runLater(()->{
                     this.tsnePlot.getData().add(seria);
                 });
-                i++;
             }
-        }else{ //
+        }else{
             if(coordinates.length != tsnePlot.getData().size()){ //Standars way of adding values to series
                 throw new NegativeArraySizeException("Długośc serii nie odpowiada długości tablicy współrzednych");
             }
@@ -109,7 +117,8 @@ public class HelloController {
                 double y = coordinates[i][1];
                 XYChart.Data<Number,Number> data = new XYChart.Data<>(x,y);
                 //Circle circle = new Circle(3);
-                data.setNode(chartLegend[i]);
+                //data.setNode(circle);
+                data.setNode(new Circle(3, chartLegend[i]));
                 int finalI = i;
                 Platform.runLater(()->{
                     tsnePlot.getData().get(finalI).getData().add(data);
@@ -120,16 +129,12 @@ public class HelloController {
     }
 
     private void prepareLegendOfPlot(double[][] coordinates) {
-        Color[] colors = new Color[coordinates.length];
-        this.chartLegend = new Circle[coordinates.length];
-        for (int j = 0; j < colors.length; j++) {
-            double hue = (double) j / colors.length; // Odcień koloru
-            colors[j] = Color.hsb(hue * 360, 1.0, 1.0); // Tworzenie koloru na podstawie odcienia
-            chartLegend[j] = new Circle(3,colors[j]);
+        this.chartLegend = new Color[coordinates.length];
+        for (int j = 0; j < chartLegend.length; j++) {
+            double hue = (double) j / chartLegend.length; // Odcień koloru
+            chartLegend[j] = Color.hsb(hue * 360, 1.0, 1.0); // Tworzenie koloru na podstawie odcienia
         }
     }
-
-
     private void generateFunctionDropList() {
         ComboBox<OptimizationFunction> comboBoxObjFunc = new ComboBox<>();
         this.comboBoxObjFunc = comboBoxObjFunc;
@@ -155,11 +160,40 @@ public class HelloController {
         optimization.setTargetEpochCount(epochsStop);
         optimization.setTargetErrorValue(solutionStop);
         LOGGER.log(Level.INFO, "Parametry zostały wczytane, nastepuje uruchomienie optymalizacji");
+        LOGGER.log(Level.INFO, "Przygotowanie wykresow funkcji...");
+        setupObjectiveFunctionPlot();
         optimization.setRunning(true);
         executorService.execute(optimization);
         LOGGER.log(Level.INFO, "Optymalizacja została uruchomiona");
-        generatePopulationPlot();
+
+        //generatePopulationPlot();
         //generatePlots();
+        setupBestSolutionText();
+
+        optimization.addBestVectorObserver(()-> {
+            System.out.print(optimization.getBestVector());
+        });
+    }
+
+    private void setupObjectiveFunctionPlot() {
+        if (comboBoxObjFunc.getValue().toString().equalsIgnoreCase("Objective function of dislocation density")) {
+            FunctionMgr objFunction = (FunctionMgr) comboBoxObjFunc.getValue();
+            FunctionPlot functionPlot = new FunctionPlot(objFunction.getDataTable());
+            functionPlot.initialize();
+            Platform.runLater(()->{
+                dynamicGraphs.getChildren().add(functionPlot.getGrid());
+            });
+
+        }
+    }
+
+    private void setupBestSolutionText() {
+        this.optimization.addSolutionObserver(() ->{
+            double bestSolution = this.optimization.getBestSolution();
+            Platform.runLater(()->{
+                bestEval.setText(Double.toString(bestSolution));
+            });
+        });
     }
 
     private void generatePlots() {
@@ -245,4 +279,5 @@ public class HelloController {
             solutionStopCondition.setText(defaultText);
         }
     }
+
 }
