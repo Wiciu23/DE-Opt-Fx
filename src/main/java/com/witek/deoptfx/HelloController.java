@@ -30,6 +30,8 @@ public class HelloController {
     public TextField perplexity;
     public TextField eta;
     public TextField iterations;
+    public GridPane buttonsGridPane;
+    public Button pauseButton;
     private ComboBox<OptimizationFunction> comboBoxObjFunc;
     ExecutorService executorService = Executors.newCachedThreadPool();
     ArrayList<OptimizationFunction> functions = new ArrayList<>();
@@ -70,7 +72,65 @@ public class HelloController {
         stopButton.setDisable(true);
         //podpiecie wykresu do optymalizacji
         //generatePopulationPlot();
+        buttonsGridPane.add(startButton,1,0);
+        buttonsGridPane.add(stopButton,2,0);
+        buttonsGridPane.add(pauseButton,3,0);
+        addRandomModuleCheckBox();
+        addTotalRandomCheckBox();
+    }
 
+    private void addRandomModuleCheckBox() {
+        CheckBox checkBox = new CheckBox("Random module");
+        checkBox.setSelected(false);
+        checkBox.setOnAction(event ->{
+            if(checkBox.isSelected()){
+                optimization.setRandomModule(true);
+                LOGGER.log(Level.INFO,"RANDOM MODULE TURN ON");
+            }else {
+                optimization.setRandomModule(false);
+                LOGGER.log(Level.INFO,"RANDOM MODULE TURN OFF");
+            }
+        });
+        buttonsGridPane.add(checkBox,4,0);
+    }
+
+    private void addTotalRandomCheckBox() {
+        CheckBox checkBox = new CheckBox("Random distribution module");
+        checkBox.setSelected(false);
+        checkBox.setOnAction(event ->{
+            if(checkBox.isSelected()){
+                optimization.setRandomDistributionModule(true);
+                LOGGER.log(Level.INFO,"RANDOM MODULE TURN ON");
+            }else {
+                optimization.setRandomDistributionModule(false);
+                LOGGER.log(Level.INFO,"RANDOM MODULE TURN OFF");
+            }
+        });
+        buttonsGridPane.add(checkBox,5,0);
+    }
+
+    public void addCoefficientCheckBoxes(){
+        OptimizationParameter[] parameters = optimization.getOptimizationParameters();
+        GridPane coefficients = new GridPane();
+        for (int i = 0; i < parameters.length ; i ++) {
+            OptimizationParameter parameter = parameters[i];
+            CheckBox checkBox = new CheckBox("param" + i);
+            checkBox.setSelected(true);
+            int finalI = i;
+            checkBox.setOnAction(event ->{
+                if(checkBox.isSelected()){
+                    parameter.setOptimize(true);
+                    System.out.println("param" + finalI + " został właczony");
+                }else {
+                    parameter.setOptimize(false);
+                    System.out.println("param" + finalI + " został wyłaczony");
+                }
+            });
+            coefficients.add(checkBox,i,0);
+        }
+        Platform.runLater(()->{
+            dynamicFields.getChildren().add(coefficients);
+        });
     }
     private void generatePopulationPlot() {
         NumberAxis xAxis = new NumberAxis();
@@ -170,9 +230,12 @@ public class HelloController {
         //generatePopulationPlot();
         //generatePlots();
         setupBestSolutionText();
-
+        addCoefficientCheckBoxes();
         optimization.addBestVectorObserver(()-> {
+            //double[] vector = {1.2521226511541942E-4, 21186.985087346766, 94376.12424881992, 2.2558555594080133E9, 128881.08375253416, 2.4822558526892475, 0.0, 0.452, 0.20307949021769203, 0.409, 0.0, 4.2E8, 0.07618196420073034};
+            //functionPlot.updatePlots(vector);
             functionPlot.updatePlots(optimization.getBestVector().getCordinates());
+
         });
     }
 
@@ -214,6 +277,22 @@ public class HelloController {
             LOGGER.log(Level.INFO,"EXECUTOR SHUTDOWNED");
             startButton.setDisable(false);
             stopButton.setDisable(true);
+        }
+    }
+    public void onPauseOptButtonClick(ActionEvent actionEvent) {
+        if(!optimization.isPaused()){
+            optimization.setPaused(true);
+            Platform.runLater(()->{
+                pauseButton.setText("Optimization Paused");
+            });
+            LOGGER.log(Level.INFO,"Optymalizacja zostaje spauzowana");
+        }else{
+            optimization.setPaused(false);
+            executorService.execute(optimization);
+            Platform.runLater(()->{
+                pauseButton.setText("Pause Optimizaton");
+            });
+            LOGGER.log(Level.INFO,"Optymalizacja zostaje wznowiona");
         }
     }
 
@@ -281,5 +360,4 @@ public class HelloController {
             solutionStopCondition.setText(defaultText);
         }
     }
-
 }

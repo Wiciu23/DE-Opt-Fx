@@ -21,21 +21,34 @@ public class FunctionPlot {
 
     public void updatePlots(double[] a){
         double Q = 312000;
+        int i  = 0;
         for (ObjectProperties data: dataTable) {
-            int i  = 0;
             LineChart<Number,Number> chart = charts.get(i);
             double[] obliczone = DifferentialEq.Euler(data.epsilon[100000],data.epsilon[1],a,data.dot_epsilon,data.temperature + 273,Q,data.epsilon[100001]);
             XYChart.Series<Number,Number> seria = chart.getData().get(1); //pobranie drugiej serii
-            for(int j = 0 ; j < obliczone.length ; j+= 50){
-                double x = data.epsilon[j];
-                double y = obliczone[j];
-                XYChart.Data<Number,Number> point = new XYChart.Data<>(x,y);
-                int finalJ = j;
-                Platform.runLater(()->{
-                    seria.getData().set(finalJ,point); //DODAĆ LOGIKE, KTORA BEDZIE AKTUALIZOWALA SERIE ???
-                });
-
+            if(seria.getData().size() == 0){
+                for(int j = 0 ; j < obliczone.length ; j+= 100){
+                    double x = data.epsilon[j];
+                    double y = obliczone[j];
+                    XYChart.Data<Number,Number> point = new XYChart.Data<>(x,y);
+                    Platform.runLater(()->{
+                        seria.getData().add(point);
+                    });
+                }
+            }else{
+                int k = 0;
+                for(int j = 0 ; j < obliczone.length ; j+= 100){
+                    double x = data.epsilon[j];
+                    double y = obliczone[j];
+                    XYChart.Data<Number,Number> point = new XYChart.Data<>(x,y);
+                    int finalK = k;
+                    Platform.runLater(()->{
+                        seria.getData().set(finalK,point);
+                    });
+                    k++;
+                }
             }
+            i++;
         }
     }
 
@@ -84,6 +97,7 @@ public class FunctionPlot {
         int row = 0;
         int col = 0;
         for (LineChart chart: charts) {
+
             int finalCol = col;
             int finalRow = row;
             Platform.runLater(()->{
