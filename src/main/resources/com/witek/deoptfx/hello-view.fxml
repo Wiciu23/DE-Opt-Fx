@@ -14,7 +14,6 @@
   </padding>
 
   <GridPane fx:id="buttonsGridPane" alignment="CENTER"/>
-  <Label fx:id="welcomeText" text="Siema" />
   <Button fx:id="startButton" text="Start Optimization" onAction="#onStartOptButtonClick" />
   <Button fx:id="stopButton" text="Stop Optimization" onAction="#onStopOptButtonClick"/>
   <Button fx:id="pauseButton" text="Pause Optimizaton" onAction="#onPauseOptButtonClick"/>

@@ -1,5 +1,6 @@
 package com.witek.deoptfx.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -73,19 +74,19 @@ public class Optimization implements Runnable {
 
     public void addBestVectorObserver(ValueObserver observer) {this.bestVectorObservers.add(observer);}
 
-    public void notifyBestVectorObservers(){
+    public void notifyBestVectorObservers() throws IOException {
         for (ValueObserver observer: bestVectorObservers) {
             observer.update();
         }
     }
 
-    public void notifySolutionObservers(){
+    public void notifySolutionObservers() throws IOException {
         for (ValueObserver observer: bestSolutionObservers) {
             observer.update();
         }
     }
 
-    public void notifyPopulationObservers(){
+    public void notifyPopulationObservers() throws IOException {
         for (ValueObserver observer: populationObservers) {
             observer.update();
         }
@@ -166,7 +167,7 @@ public class Optimization implements Runnable {
         //while((bestOptSolution > targetErrorValue || targetEpochCount < counter) && isRunning) {
         while(shouldStop(bestOptSolution,counter)) {
             if(isPaused) break;
-                {
+            {
                     VectorOperations[] mutated = new VectorOperations[population.length];
                     for (int i = 0; i < population.length; i++) {
                         VectorLockable ancestor = population[i];
@@ -181,16 +182,19 @@ public class Optimization implements Runnable {
                     bestOptSolution = foundBestOptSolution(population);
                     counter++;
                     LOGGER.log(Level.INFO, "Iteration: " + counter);
+                try {
                     notifySolutionObservers();
                     notifyPopulationObservers();
                     notifyBestVectorObservers();
-                    LOGGER.log(Level.INFO, "Best global vector: " + bestVector + " FUNCTION VALUE: " + bestOptSolution);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
 
+                    LOGGER.log(Level.INFO, "Best global vector: " + bestVector + " FUNCTION VALUE: " + bestOptSolution);
 
+                }
         }
     }
-
     boolean shouldStop(Double currentErrorValue, Integer currentEpochCount){
         if(!this.isRunning){
             return false;
@@ -200,7 +204,6 @@ public class Optimization implements Runnable {
 
         return targetErrorValuePart || targetEpochCountPart;
     }
-
     private double foundBestOptSolution(VectorOperations[] vectors){
         for (VectorOperations vector: vectors) {
             double valueOfObjFunction = objectiveFunction.optimize(vector.getCordinates());
@@ -214,7 +217,6 @@ public class Optimization implements Runnable {
 
         return bestSolution;
     }
-
     public void generatePopulation(int amount){
         if(optimizationParameters == null) throw new NullPointerException("Wymagany jest obiekt zmienności parametrów optymalizacji");
         population = new VectorLockable[amount];
@@ -223,7 +225,6 @@ public class Optimization implements Runnable {
             LOGGER.log(Level.INFO, ((i + 1) + " of " + amount + " population generated"));
         }
     }
-
     private double rand(double lowerBound, double upperBound){
         Random rand = new Random();
         return lowerBound + (upperBound - lowerBound)*(rand.nextDouble());
@@ -235,7 +236,6 @@ public class Optimization implements Runnable {
         }
         return array;
     }
-
     private VectorOperations[] drawUniqueIndividuals(int amountOfIndividuals, VectorOperations uniqueIndividual){
         if(amountOfIndividuals >= population.length){
             throw new NegativeArraySizeException("Population should be bigger to draw " + amountOfIndividuals + " unique individuals");
@@ -259,8 +259,6 @@ public class Optimization implements Runnable {
         }
         return drawIndividuals;
     }
-
-
     //SPRAWDZIĆ CZY TUTAJ LEPIEJ ZWRACAĆ TYP INTERFEJSU CZY VECTORLOCKABLE?!
     public VectorOperations mutate(VectorOperations vector, double F ,double CR, int jRand, VectorOperations r1, VectorOperations r2, VectorOperations r3){
         if(vector.length() != r1.length() && vector.length() != r2.length() && vector.length() != r3.length()){
@@ -293,7 +291,6 @@ public class Optimization implements Runnable {
         //mutVector.set(mutated);
         return mutVector;
     }
-
     private void checkIfMutatedIsBetter(double[] coordinates, double[] mutated, int i, double muatedCoordinate, double savedMutatedCoordinate) {
         if (objectiveFunction.optimize(mutated) < objectiveFunction.optimize(coordinates)) {
             mutated[i] = muatedCoordinate;
@@ -303,8 +300,6 @@ public class Optimization implements Runnable {
             LOGGER.log(Level.INFO, String.format("RANDOMLY SHUFFELED COORDIANTE IS WORSE %f.0 > than %f.0 :  [Coordinate %d]", coordinates[i], muatedCoordinate, i));
         }
     }
-
-
     void replace(VectorOperations vector, VectorOperations mutated){
         double[] vectorCoordinates = vector.getCordinates();
         double[] mutatedCoordinates = mutated.getCordinates();
@@ -317,7 +312,6 @@ public class Optimization implements Runnable {
             LOGGER.log(Level.INFO, String.format("%-60s %E < %E","Vector has been swapped, better solution was founded: ",evalMutVec, evalVec ));
         }else LOGGER.log(Level.INFO, String.format("%-60s %E > %E","Vector has not been swapped, better solution was not founded: ", evalMutVec, evalVec ));
     }
-
     public void setRandomDistributionModule(boolean b) {
         this.isRandomDistribution = b;
     }

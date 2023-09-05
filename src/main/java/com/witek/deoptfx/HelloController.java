@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Callback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HelloController {
+    private CSVWriter csvWriter;
     private static Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     public TextField epochsStopCondition;
     public TextField solutionStopCondition;
@@ -203,7 +205,7 @@ public class HelloController {
         dynamicFields.getChildren().add(comboBoxObjFunc);
     }
 
-    public void onStartOptButtonClick(ActionEvent actionEvent) {
+    public void onStartOptButtonClick(ActionEvent actionEvent) throws IOException {
         if (executorService.isShutdown()) {
             LOGGER.log(Level.INFO,"RERUNNING EXECUTOR");
             executorService = Executors.newCachedThreadPool();
@@ -226,8 +228,7 @@ public class HelloController {
         optimization.setRunning(true);
         executorService.execute(optimization);
         LOGGER.log(Level.INFO, "Optymalizacja została uruchomiona");
-
-        //generatePopulationPlot();
+        //generatePopulationPlot();  //TSNE
         //generatePlots();
         setupBestSolutionText();
         addCoefficientCheckBoxes();
@@ -235,7 +236,24 @@ public class HelloController {
             //double[] vector = {1.2521226511541942E-4, 21186.985087346766, 94376.12424881992, 2.2558555594080133E9, 128881.08375253416, 2.4822558526892475, 0.0, 0.452, 0.20307949021769203, 0.409, 0.0, 4.2E8, 0.07618196420073034};
             //functionPlot.updatePlots(vector);
             functionPlot.updatePlots(optimization.getBestVector().getCordinates());
+        });
+        prepareDataFile(optimization);
+    }
 
+    private void prepareDataFile(Optimization opt) throws IOException {
+        double populationSize = opt.getPopulation().length;
+        double CR = opt.getCR();
+        double F = opt.getF();
+        //String initialRow = String.format("Population size,%f.0,CR,%f.2,F,%f.2",populationSize,CR,F);
+        String initialRow = "bestEval,BestVector";
+        String fileName = String.format("POP%.0f_CR%.2f_F%.2f",populationSize,CR,F);
+        CSVWriter writer = new CSVWriter(fileName);
+        writer.write(initialRow);
+        optimization.addSolutionObserver(()->{
+            double bestEval = opt.getBestSolution();
+            String bestVector = opt.getBestVector().toString();
+            String row = String.format("%.5f,%s",bestEval,bestVector);
+            writer.write(row);
         });
     }
 
@@ -248,7 +266,6 @@ public class HelloController {
             Platform.runLater(()->{
                 dynamicGraphs.getChildren().add(functionPlot.getGrid());
             });
-
         }
     }
 

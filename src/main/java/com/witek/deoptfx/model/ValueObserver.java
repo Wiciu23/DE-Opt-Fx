@@ -1,5 +1,7 @@
 package com.witek.deoptfx.model;
 
+import java.io.IOException;
+
 public interface ValueObserver {
-    void update();
+    void update() throws IOException;
 }
