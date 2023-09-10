@@ -1,8 +1,8 @@
 package com.witek.deoptfx.model;
 
 public class OptimizeParametersFactory {
-    public static OptimizationParameter[] getOptimizeParameters(int type) {
-        if (type == 1) {
+    public static OptimizationParameter[] getOptimizeParameters(String functionName) {
+        if (functionName.equalsIgnoreCase("Objective function of dislocation density")) {
             OptimizationParameter[] parameters = new OptimizationParameter[13];
             double[][] ranges = {
                     {0.05 * 0.001, 0.15 * 0.001},
@@ -19,15 +19,40 @@ public class OptimizeParametersFactory {
                     {1E13 * 0.00001, 1E13 * 0.00009},
                     {0.01, 0.09}
             };
-            for (int i = 0; i < parameters.length; i++) {
-                double lowerBound = ranges[i][0];
-                double upperBound = ranges[i][1];
-                parameters[i] = new OptimizationParameter(lowerBound,upperBound);
-            }
+            prepareRandParams(parameters, ranges);
             return parameters;
-        } else
+        } else if (functionName.equalsIgnoreCase("RosenBrock")){
+            OptimizationParameter[] parameters = new OptimizationParameter[6];
+            double[][] ranges = {
+                {-100.0,100.0},
+                {-100.0,100.0},
+                {-100.0,100.0},
+                {-100.0,100.0},
+                {-100.0,100.0},
+                {-100.0,100.0}
+            };
+            prepareRandParams(parameters, ranges);
+            return parameters;
+        } else if (functionName.equalsIgnoreCase("Rastrigin")){
+            OptimizationParameter[] parameters = new OptimizationParameter[3];
+            double[][] ranges = {
+                    {-10000.0,10000.0},
+                    {-10000.0,10000.0},
+                    {-10000.0,10000.0}
+            };
+            prepareRandParams(parameters, ranges);
+            return parameters;
+        }
             return null;
 
+    }
+
+    private static void prepareRandParams(OptimizationParameter[] parameters, double[][] ranges) {
+        for (int i = 0; i < parameters.length; i++) {
+            double lowerBound = ranges[i][0];
+            double upperBound = ranges[i][1];
+            parameters[i] = new OptimizationParameter(lowerBound,upperBound);
+        }
     }
 }
 

@@ -201,7 +201,6 @@ public class Optimization implements Runnable {
         }
         boolean targetErrorValuePart = this.targetErrorValue != null && currentErrorValue > this.targetErrorValue;
         boolean targetEpochCountPart = this.targetEpochCount != null && currentEpochCount < this.targetEpochCount;
-
         return targetErrorValuePart || targetEpochCountPart;
     }
     private double foundBestOptSolution(VectorOperations[] vectors){

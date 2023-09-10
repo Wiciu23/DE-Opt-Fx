@@ -69,6 +69,8 @@ public class HelloController {
         LOGGER.log(Level.INFO,"Inicjalizacja Optymalizacji...");
         //dodanie funkcji optymalizacji do listy
         functions.add(OptimizeFunctionFactory.getOptimizeFunction(1));
+        functions.add(OptimizeFunctionFactory.getOptimizeFunction(2));
+        functions.add(OptimizeFunctionFactory.getOptimizeFunction(3));
         //generowanie selectboxa na podstawie listy
         generateFunctionDropList();
         stopButton.setDisable(true);
@@ -217,8 +219,9 @@ public class HelloController {
         double CR = Double.parseDouble(this.CR.getText());
         int epochsStop = Integer.parseInt(epochsStopCondition.getText());
         double solutionStop = Double.parseDouble(solutionStopCondition.getText());
-        OptimizationParameter[] objParams = OptimizeParametersFactory.getOptimizeParameters(1);
         OptimizationFunction objFunction = comboBoxObjFunc.getValue();
+        OptimizationParameter[] objParams = OptimizeParametersFactory.getOptimizeParameters(objFunction.toString());
+
         optimization = new Optimization(objParams,population,objFunction,F,CR);
         optimization.setTargetEpochCount(epochsStop);
         optimization.setTargetErrorValue(solutionStop);
@@ -232,11 +235,13 @@ public class HelloController {
         //generatePlots();
         setupBestSolutionText();
         addCoefficientCheckBoxes();
-        optimization.addBestVectorObserver(()-> {
-            //double[] vector = {1.2521226511541942E-4, 21186.985087346766, 94376.12424881992, 2.2558555594080133E9, 128881.08375253416, 2.4822558526892475, 0.0, 0.452, 0.20307949021769203, 0.409, 0.0, 4.2E8, 0.07618196420073034};
-            //functionPlot.updatePlots(vector);
-            functionPlot.updatePlots(optimization.getBestVector().getCordinates());
-        });
+        if(objFunction.toString().equalsIgnoreCase("Objective function of dislocation density")){
+            optimization.addBestVectorObserver(()-> {
+                //double[] vector = {1.2521226511541942E-4, 21186.985087346766, 94376.12424881992, 2.2558555594080133E9, 128881.08375253416, 2.4822558526892475, 0.0, 0.452, 0.20307949021769203, 0.409, 0.0, 4.2E8, 0.07618196420073034};
+                //functionPlot.updatePlots(vector);
+                functionPlot.updatePlots(optimization.getBestVector().getCordinates());
+            });
+        }
         prepareDataFile(optimization);
     }
 
