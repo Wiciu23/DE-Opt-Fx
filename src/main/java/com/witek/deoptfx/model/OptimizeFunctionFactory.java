@@ -1,5 +1,6 @@
 package com.witek.deoptfx.model;
 
+import com.witek.deoptfx.model.function.Ackley;
 import com.witek.deoptfx.model.function.Rastrigin;
 
 public class OptimizeFunctionFactory {
@@ -13,7 +14,11 @@ public class OptimizeFunctionFactory {
         }else if(type == 3){
             OptimizationFunction function = new Rastrigin();
             return function;
+        }else if(type == 4){
+            OptimizationFunction function = new Ackley();
+            return function;
         }else
+
             return null;
     }
 }

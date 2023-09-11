@@ -71,6 +71,7 @@ public class HelloController {
         functions.add(OptimizeFunctionFactory.getOptimizeFunction(1));
         functions.add(OptimizeFunctionFactory.getOptimizeFunction(2));
         functions.add(OptimizeFunctionFactory.getOptimizeFunction(3));
+        functions.add(OptimizeFunctionFactory.getOptimizeFunction(4));
         //generowanie selectboxa na podstawie listy
         generateFunctionDropList();
         stopButton.setDisable(true);

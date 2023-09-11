@@ -42,7 +42,16 @@ public class OptimizeParametersFactory {
             };
             prepareRandParams(parameters, ranges);
             return parameters;
-        }
+        } else if (functionName.equalsIgnoreCase("Ackley")){
+            OptimizationParameter[] parameters = new OptimizationParameter[3];
+            double[][] ranges = {
+                    {-1000.0,1000.0},
+                    {-1000.0,1000.0},
+                    {-1000.0,1000.0}
+            };
+            prepareRandParams(parameters, ranges);
+            return parameters;
+        } else
             return null;
 
     }
