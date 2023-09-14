@@ -23,7 +23,7 @@ public class CSVWriter {
         }
 
         try{
-            fileWriter = new FileWriter(fileName);
+            fileWriter = new FileWriter(fileName,true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

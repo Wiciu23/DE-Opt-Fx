@@ -12,12 +12,17 @@ public class Optimization implements Runnable {
 
     private final ArrayList<ValueObserver> bestVectorObservers = new ArrayList<>();
 
+    private final ArrayList<ValueObserver> counterObservers = new ArrayList<>();
+
     private final ArrayList<ValueObserver> isPauedObservers = new ArrayList<>();
+
+    private int counter = 0;
 
     private volatile boolean isRunning = false;
 
     private volatile boolean isPaused = false;
     private Boolean isRandomDistribution = false;
+    private boolean testMode = false;
 
     public boolean isPaused() {
         return isPaused;
@@ -73,6 +78,14 @@ public class Optimization implements Runnable {
     }
 
     public void addBestVectorObserver(ValueObserver observer) {this.bestVectorObservers.add(observer);}
+
+    public void addCounterObserver(ValueObserver observer) {this.counterObservers.add(observer);}
+
+    public void notifyCounterObservers() throws IOException {
+        for (ValueObserver observer: counterObservers) {
+            observer.update();
+        }
+    }
 
     public void notifyBestVectorObservers() throws IOException {
         for (ValueObserver observer: bestVectorObservers) {
@@ -162,7 +175,7 @@ public class Optimization implements Runnable {
     @Override
     public void run(){
         double bestOptSolution = bestSolution;
-        int counter = 0;
+        this.counter = 0;
         //DODAĆ TUTAJ WARUNEK ZŁOŻONY JAKO FUNKCJA, KTÓRA ZWRACA BOOLEAN
         //while((bestOptSolution > targetErrorValue || targetEpochCount < counter) && isRunning) {
         while(shouldStop(bestOptSolution,counter)) {
@@ -194,6 +207,11 @@ public class Optimization implements Runnable {
 
                 }
         }
+        try {
+            notifyCounterObservers();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     boolean shouldStop(Double currentErrorValue, Integer currentEpochCount){
         if(!this.isRunning){
@@ -201,7 +219,7 @@ public class Optimization implements Runnable {
         }
         boolean targetErrorValuePart = this.targetErrorValue != null && currentErrorValue > this.targetErrorValue;
         boolean targetEpochCountPart = this.targetEpochCount != null && currentEpochCount < this.targetEpochCount;
-        return targetErrorValuePart || targetEpochCountPart;
+        return targetErrorValuePart && targetEpochCountPart;
     }
     private double foundBestOptSolution(VectorOperations[] vectors){
         for (VectorOperations vector: vectors) {
@@ -219,8 +237,14 @@ public class Optimization implements Runnable {
     public void generatePopulation(int amount){
         if(optimizationParameters == null) throw new NullPointerException("Wymagany jest obiekt zmienności parametrów optymalizacji");
         population = new VectorLockable[amount];
+        Random rand = new Random(1234);
         for(int i = 0; i < amount ; i++){
-            population[i] = new VectorLockable(new Vector(generateRandomArrayOfDoubles(optimizationParameters)),optimizationParameters);
+            if(this.testMode){
+
+                population[i] = new VectorLockable(new Vector(generateRandomArrayOfDoublesWithSeed(optimizationParameters,rand)),optimizationParameters);
+            }else{
+                population[i] = new VectorLockable(new Vector(generateRandomArrayOfDoubles(optimizationParameters)),optimizationParameters);
+            }
             LOGGER.log(Level.INFO, ((i + 1) + " of " + amount + " population generated"));
         }
     }
@@ -228,10 +252,24 @@ public class Optimization implements Runnable {
         Random rand = new Random();
         return lowerBound + (upperBound - lowerBound)*(rand.nextDouble());
     }
+
+    private double seedRand(double lowerBound, double upperBound, Random randM){
+        Random rand = randM;
+        return lowerBound + (upperBound - lowerBound)*(rand.nextDouble());
+    }
     private double[] generateRandomArrayOfDoubles(OptimizationParameter[] parameters){
         double[] array = new double[parameters.length];
         for(int i = 0 ; i < array.length ; i++){
             array[i] = rand(parameters[i].getLowerBound(), parameters[i].getUpperBound());
+        }
+        return array;
+    }
+
+    private double[] generateRandomArrayOfDoublesWithSeed(OptimizationParameter[] parameters, Random randM){
+        double[] array = new double[parameters.length];
+        Random rand = randM;
+        for(int i = 0 ; i < array.length ; i++){
+            array[i] = seedRand(parameters[i].getLowerBound(), parameters[i].getUpperBound(),rand);
         }
         return array;
     }
@@ -258,7 +296,7 @@ public class Optimization implements Runnable {
         }
         return drawIndividuals;
     }
-    //SPRAWDZIĆ CZY TUTAJ LEPIEJ ZWRACAĆ TYP INTERFEJSU CZY VECTORLOCKABLE?!
+
     public VectorOperations mutate(VectorOperations vector, double F ,double CR, int jRand, VectorOperations r1, VectorOperations r2, VectorOperations r3){
         if(vector.length() != r1.length() && vector.length() != r2.length() && vector.length() != r3.length()){
             throw new NegativeArraySizeException("Vectors have to be the same lenght!");
@@ -308,10 +346,18 @@ public class Optimization implements Runnable {
         double evalVec = objectiveFunction.optimize(vectorCoordinates);
         if(evalMutVec < evalVec || Double.isNaN(evalVec)){
             vector.set(mutatedCoordinates);
-            LOGGER.log(Level.INFO, String.format("%-60s %E < %E","Vector has been swapped, better solution was founded: ",evalMutVec, evalVec ));
-        }else LOGGER.log(Level.INFO, String.format("%-60s %E > %E","Vector has not been swapped, better solution was not founded: ", evalMutVec, evalVec ));
+            //LOGGER.log(Level.INFO, String.format("%-60s %E < %E","Vector has been swapped, better solution was founded: ",evalMutVec, evalVec ));
+        }else; //LOGGER.log(Level.INFO, String.format("%-60s %E > %E","Vector has not been swapped, better solution was not founded: ", evalMutVec, evalVec ));
     }
     public void setRandomDistributionModule(boolean b) {
         this.isRandomDistribution = b;
+    }
+
+    public int getCounter() {
+        return counter;
+    }
+
+    public void setCounter(int counter) {
+        this.counter = counter;
     }
 }
